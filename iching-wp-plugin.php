@@ -21,19 +21,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-add_shortcode(
-    'iching_divination',
-    'iching_output'
-);
+use classes\IchingPlugin;
 
-//  Call Divination
-use App\Divination;
+require_once __DIR__ . '/classes/IchingPlugin.php';
 
-require_once __DIR__ . '/classes/core/vendor/autoload.php';
-
-function iching_output() {
-
-$text = (new Divination)->index();
-
-    return $text;
-}
+(new IchingPlugin())->init();
