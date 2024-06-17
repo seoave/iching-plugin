@@ -4,35 +4,26 @@ namespace classes;
 
 use App\FortuneTeller\FortuneTeller;
 
-class IchingTemplate
+class Ajax
 {
     private array $hexagrames = [];
 
+    /**
+     * @throws \Exception
+     */
     public function __construct()
     {
         $this->hexagrames = (new FortuneTeller())->index();
+        $this->setAjaxAction();
+    }
 
-        wp_enqueue_script(
-            'iching',
-            ICHING_ASSETS_URL . '/js/main.js',
-            ['jquery'],
-            '1.0.0',
-            [
-                'strategy'  => 'defer',
-                'in_footer' => true,
-            ]
-        );
-        wp_localize_script(
-            'iching',
-            'my_ajax_obj',
-            [
-                'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce'    => wp_create_nonce('title_example'),
-            ]
-        );
-   }
+    public function setAjaxAction()
+    {
+        add_action('wp_ajax_nopriv_get_divination', [$this,'iching_ajax_get_divination']);
+        add_action('wp_ajax_get_divination', [$this,'iching_ajax_get_divination']);
+    }
 
-    public function getTemplate(): string
+    public function iching_ajax_get_divination(): void
     {
         $primHex = $this->hexagrames['primaryHexagram'];
         $primData = !empty($this->hexagrames['primaryHexagramData']) ? $this->hexagrames['primaryHexagramData'] : [];
@@ -43,16 +34,14 @@ class IchingTemplate
         $primWorlds = !empty($primData['worlds']) ? $primData['worlds'] : '';
         $primPotential = !empty($primData['potential']) ? $primData['potential'] : '';
 
-        $secondHex = $this->hexagrames['secondaryHexagram'] ?: '';
-        $secondData = !empty($this->hexagrames['secondaryHexagramData'])
-            ? $this->hexagrames['secondaryHexagramData']
-            : [];
-        $secondName = !empty($secondData['name']) ? $secondData['name'] : '';
-        $secondDesc = !empty($secondData['description']) ? $secondData['description'] : '';
-        $secondKeys = !empty($secondData['keywords']) ? $secondData['keywords'] : '';
-        $secondMeaning = !empty($secondData['interpretation']) ? $secondData['interpretation'] : '';
-        $secondWorlds = !empty($secondData['worlds']) ? $secondData['worlds'] : '';
-        $secondPotential = !empty($secondData['potential']) ? $secondData['potential'] : '';
+        $secondHex = $this->hexagrames['secondaryHexagram'];
+        $secondData = $this->hexagrames['secondaryHexagramData'];
+        $secondName = $secondData['name'];
+        $secondDesc = $secondData['description'];
+        $secondKeys = $secondData['keywords'];
+        $secondMeaning = $secondData['interpretation'];
+        $secondWorlds = $secondData['worlds'];
+        $secondPotential = $secondData['potential'];
 
 
         $primHtml = '<h3>Ваше передбачення</h3>';
@@ -90,11 +79,8 @@ class IchingTemplate
             );
         }
 
-        $button = '<div id="iching-button-wrapper"><button id="iching-button">Запитати Іцзін</button></div>';
-        $divinationWrapper = '<div id="iching-diviation" class="iching-diviation"></div>';
-
-
-        return $divinationWrapper . $button . $primHtml . $secondHtml;
+        wp_send_json($primHtml . $secondHtml);
+        wp_die();
     }
 
     /**
