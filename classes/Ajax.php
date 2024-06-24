@@ -14,17 +14,18 @@ class Ajax
     public function __construct()
     {
         $this->hexagrames = (new FortuneTeller())->index();
-        $this->setAjaxAction();
     }
 
-    public function setAjaxAction()
+    public function setAjaxAction(): void
     {
-        add_action('wp_ajax_nopriv_get_divination', [$this,'iching_ajax_get_divination']);
-        add_action('wp_ajax_get_divination', [$this,'iching_ajax_get_divination']);
+        add_action('wp_ajax_nopriv_get_divination', [$this, 'iching_ajax_get_divination']);
+        add_action('wp_ajax_get_divination', [$this, 'iching_ajax_get_divination']);
     }
 
     public function iching_ajax_get_divination(): void
     {
+        check_ajax_referer('title_example', 'nonce');
+
         $primHex = $this->hexagrames['primaryHexagram'];
         $primData = !empty($this->hexagrames['primaryHexagramData']) ? $this->hexagrames['primaryHexagramData'] : [];
         $primName = !empty($primData['name']) ? $primData['name'] : '';
@@ -79,8 +80,9 @@ class Ajax
             );
         }
 
-        wp_send_json($primHtml . $secondHtml);
-        wp_die();
+        //wp_send_json($primHtml . $secondHtml);
+        echo json_encode('<div>' . $primHtml . $secondHtml . '</div>');
+        die();
     }
 
     /**

@@ -24,9 +24,9 @@ if (!defined('ABSPATH')) {
 // Constants
 define( 'ICHING_ASSETS_URL', plugins_url( '/assets', __FILE__ ) );
 
-
 use classes\IchingPlugin;
 
 require_once __DIR__ . '/classes/IchingPlugin.php';
 
 (new IchingPlugin())->init();
+
